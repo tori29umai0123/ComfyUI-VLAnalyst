@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Files for a separate pose extension.
+_pose_render_data.py
+_pose_zip_save.py
+_preset_zip_load.py

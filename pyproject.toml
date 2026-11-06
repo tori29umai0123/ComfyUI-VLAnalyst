@@ -1,0 +1,6 @@
+[project]
+name = "comfyui-vlanalyst"
+version = "0.1.0"
+description = "VL Analyst image and video understanding nodes for ComfyUI"
+requires-python = ">=3.11"
+dependencies = ["transformers>=5.5.3,<6", "huggingface-hub>=1.5,<2", "accelerate>=1.12,<2", "Pillow>=10"]

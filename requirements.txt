@@ -1,0 +1,5 @@
+# Tested in the existing ComfyUI environment; do not install with --upgrade indiscriminately.
+transformers>=5.5.3,<6
+huggingface-hub>=1.5,<2
+accelerate>=1.12,<2
+Pillow>=10
