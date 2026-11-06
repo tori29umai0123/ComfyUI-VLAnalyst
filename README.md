@@ -9,10 +9,13 @@
 | 4B | `Qwen/Qwen3.5-4B` |
 | 9B | `Qwen/Qwen3.5-9B` |
 | 9B | `zai-org/GLM-4.6V-Flash` |
+| 14B | `OpenGVLab/InternVL3_5-14B-HF` |
 
-量子化モデルやGGUFには対応していません。Loaderには上表の3モデルだけが常に表示され、選択した
+量子化モデルやGGUFには対応していません。Loaderには上表の4モデルだけが常に表示され、選択した
 モデルが `models/LLM` にない場合だけHugging Faceから自動ダウンロードします。
 非公式モデルや任意のローカルモデルは表示しません。
+
+InternVL3.5-14Bは[公式のHF形式](https://huggingface.co/OpenGVLab/InternVL3_5-14B-HF)を使用します。[元のGitHub形式](https://huggingface.co/OpenGVLab/InternVL3_5-14B)は`model_type=internvl_chat`で、このLoaderにはそのまま読み込めません。InternVLの動画解析では、選択したフレームを時刻付きの画像列として渡します。
 
 VLモデルをローカル実行し、ComfyUIの画像またはデコード済み動画フレームを分析するカスタムノードです。UI表示時には通信せず、未配置の公式モデルをLoaderで実際に選択・実行したときだけダウンロードします。
 
@@ -43,6 +46,7 @@ VLモデルをローカル実行し、ComfyUIの画像またはデコード済�
 | `Qwen/Qwen3.5-4B` 動画推論 | 対応 |
 | Qwen3.5-9B | モデル未配置、未実測 |
 | GLM-4.6V-Flash | モデル未配置、未実測 |
+| InternVL3.5-14B-HF | モデル未配置、未実測 |
 
 「ノード登録」「前処理」「モデル推論」を区別しています。スモークテストでは画像ロード約4.60秒・推論約0.95秒、2フレーム動画推論約0.92秒でした。これは白黒の小画像と最大16生成トークンによる経路確認値で、性能指標ではありません。未実測の組合せを対応済みとは扱いません。
 
@@ -60,10 +64,11 @@ C:\ComfyUI\models\LLM\Qwen3.5-4B\
 ```
 
 GLM-4.6V-Flashは`C:\ComfyUI\models\LLM\GLM-4.6V-Flash\`へ同様に配置します。
+InternVL3.5-14B-HFは`C:\ComfyUI\models\LLM\InternVL3_5-14B-HF\`へ配置します。
 
 サブフォルダも探索します。フォルダ名ではなく`config.json`の`model_type`と`architectures`を確認します。初期版は以下に限定しています。
 
-- `model_type`: `qwen3_5` または `glm4v`
+- `model_type`: `qwen3_5`、`glm4v` または `internvl`
 - architecture: `ForConditionalGeneration`
 - Transformers形式の非量子化モデル（BF16を推奨）
 

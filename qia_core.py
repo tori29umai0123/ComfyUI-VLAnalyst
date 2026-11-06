@@ -16,11 +16,12 @@ from pathlib import Path
 from typing import Any
 
 
-SUPPORTED_MODEL_TYPES = {"qwen3_5", "glm4v"}
+SUPPORTED_MODEL_TYPES = {"qwen3_5", "glm4v", "internvl"}
 OFFICIAL_MODEL_REPOS = (
     "Qwen/Qwen3.5-4B",
     "Qwen/Qwen3.5-9B",
     "zai-org/GLM-4.6V-Flash",
+    "OpenGVLab/InternVL3_5-14B-HF",
 )
 
 
@@ -47,10 +48,12 @@ def validate_model(model_path: str | Path) -> dict[str, Any]:
     config = read_config(model_path)
     model_type = str(config.get("model_type", ""))
     architectures = [str(x) for x in config.get("architectures", [])]
+    if model_type == "internvl_chat":
+        raise ValueError("InternVL3.5のGitHub形式は読み込めません。公式のInternVL3_5-14B-HFを使用してください。")
     if model_type not in SUPPORTED_MODEL_TYPES:
         raise ValueError(
             f"未対応モデル形式です (model_type={model_type or '不明'})。"
-            "Qwen3.5またはGLM-4.6V-FlashのTransformers形式だけを対象にします。"
+            "Qwen3.5、GLM-4.6V-Flash、InternVL3.5のTransformers形式だけを対象にします。"
         )
     if not any("ForConditionalGeneration" in x for x in architectures):
         raise ValueError(f"画像対応のConditionalGenerationモデルではありません: {architectures}")
@@ -390,7 +393,22 @@ def run_inference(
                     "width": images[0].width, "height": images[0].height,
                     "frames_indices": frame_indices,
                 }]}
-            if handle["model_type"] == "glm4v":
+            if handle["model_type"] == "internvl":
+                if is_video:
+                    visuals = [item for index, (image, timestamp) in enumerate(zip(images, timestamps))
+                               for item in ({"type": "text", "text": f"Frame {index + 1} ({timestamp:.2f}s):"},
+                                            {"type": "image", "image": image})]
+                    messages[1]["content"] = [*visuals, {"type": "text", "text": user_prompt}]
+                elif len(images) > 1:
+                    visuals = [item for index, image in enumerate(images)
+                               for item in ({"type": "text", "text": f"Picture {index + 1}:"},
+                                            {"type": "image", "image": image})]
+                    messages[1]["content"] = [*visuals, {"type": "text", "text": user_prompt}]
+                inputs = entry.processor.apply_chat_template(
+                    messages, tokenize=True, add_generation_prompt=True,
+                    return_dict=True, return_tensors="pt",
+                )
+            elif handle["model_type"] == "glm4v":
                 inputs = entry.processor.apply_chat_template(
                     messages, tokenize=True, add_generation_prompt=True, enable_thinking=False,
                     return_dict=True, return_tensors="pt", processor_kwargs=video_kwargs,
